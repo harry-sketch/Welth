@@ -1,6 +1,6 @@
 import { useSignIn } from "@clerk/expo";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type Href, useRouter } from "expo-router";
+import { type Href, Link, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
@@ -89,6 +89,7 @@ export const SignInMain = () => {
               className="bg-inputBg rounded-lg px-3 py-4 text-white"
               placeholderTextColor="#A5A5A5"
               placeholder="Email"
+              autoCapitalize="none"
             />
           )}
         />
@@ -116,11 +117,23 @@ export const SignInMain = () => {
           {isLoading ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-center text-white text-base font-medium">
+            <Text className="text-center text-white text-xl font-medium">
               Sign In
             </Text>
           )}
         </TouchableOpacity>
+
+        <View className="flex justify-end mt-2 flex-row gap-2">
+          <Text className="text-white">New User?</Text>
+          <Link
+            href="/(auth)/sign-up"
+            style={{
+              color: "#55BF9A",
+            }}
+          >
+            Sign Up
+          </Link>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
