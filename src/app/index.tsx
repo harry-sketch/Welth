@@ -1,9 +1,16 @@
-import { Text, View } from "react-native";
+import { useAuth } from "@clerk/expo";
+import { Redirect } from "expo-router";
 
 export default function Index() {
-  return (
-    <View className="bg-red-400 flex-1">
-      <Text className="text-blue-400">Hello World</Text>
-    </View>
-  );
+  const { isSignedIn, isLoaded } = useAuth();
+
+  if (!isLoaded) {
+    return null;
+  }
+
+  if (!isSignedIn) {
+    return <Redirect href="/(auth)/sign-in" />;
+  }
+
+  return <Redirect href="/(root)/(tabs)" />;
 }
