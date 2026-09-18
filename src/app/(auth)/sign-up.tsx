@@ -1,7 +1,7 @@
 import { useAuth, useSignUp } from "@clerk/expo";
 import { useCallback, useState } from "react";
 import { SignUpMain } from "../../components/SignUp/SignUpMain";
-import { SignUpVerify } from "../../components/SignUp/SignUpVerify";
+import SignUpVerify from "../../components/SignUp/SignUpVerify";
 
 export default function SignUnScreen() {
   const [email, setEmail] = useState<string>("");

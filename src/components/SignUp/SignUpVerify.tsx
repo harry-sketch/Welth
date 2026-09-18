@@ -1,6 +1,7 @@
 import { useSignUp } from "@clerk/expo";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type Href, useRouter } from "expo-router";
+import { memo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
@@ -21,7 +22,7 @@ interface Props {
   email: string;
 }
 
-export const SignUpVerify = ({ email }: Props) => {
+const SignUpVerify = ({ email }: Props) => {
   const router = useRouter();
 
   const { fetchStatus, signUp } = useSignUp();
@@ -111,3 +112,5 @@ export const SignUpVerify = ({ email }: Props) => {
     </KeyboardAvoidingView>
   );
 };
+
+export default memo(SignUpVerify);
