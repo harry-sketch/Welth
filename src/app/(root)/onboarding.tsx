@@ -1,13 +1,5 @@
-import { Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { OnboardingMain } from "../../components/Onboarding/OnboardingMain";
 
 export default function Onboarding() {
-  return (
-    <SafeAreaView
-      className="flex-1 justify-center bg-body items-center w-full p-4"
-      edges={["top"]}
-    >
-      <Text className="text-white">On-Boarding</Text>
-    </SafeAreaView>
-  );
+  return <OnboardingMain />;
 }

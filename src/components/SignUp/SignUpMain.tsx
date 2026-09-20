@@ -81,7 +81,7 @@ export const SignUpMain = ({ handleEmail }: Props) => {
               <TextInput
                 value={value}
                 onChangeText={onChange}
-                className="bg-inputBg rounded-lg px-3 py-4 text-white w-1/2 h-full"
+                className="px-3 py-4 text-white w-1/2 h-full bg-inputBg rounded-lg p-4 flex items-center justify-center text-base font-medium border border-white/10"
                 placeholderTextColor="#A5A5A5"
                 placeholder="First Name"
               />
@@ -95,7 +95,7 @@ export const SignUpMain = ({ handleEmail }: Props) => {
               <TextInput
                 value={value}
                 onChangeText={onChange}
-                className="bg-inputBg rounded-lg px-3 py-4 text-white w-1/2 text-left"
+                className="px-3 py-4 text-white w-1/2 h-full bg-inputBg rounded-lg p-4 flex items-center justify-center text-base font-medium border border-white/10"
                 placeholderTextColor="#A5A5A5"
                 placeholder="Last Name"
               />
@@ -110,7 +110,7 @@ export const SignUpMain = ({ handleEmail }: Props) => {
             <TextInput
               value={value}
               onChangeText={onChange}
-              className="bg-inputBg rounded-lg px-3 py-4 text-white"
+              className="bg-inputBg rounded-lg p-4 text-white border border-white/10 flex items-center justify-center text-base font-medium"
               placeholderTextColor="#A5A5A5"
               placeholder="Email"
               autoCapitalize="none"
@@ -123,7 +123,7 @@ export const SignUpMain = ({ handleEmail }: Props) => {
           name="password"
           render={({ field: { onChange, value } }) => (
             <TextInput
-              className="bg-[#1A1A1A] rounded-lg px-3 py-4 text-base font-medium text-white my-4"
+              className="bg-[#1A1A1A] rounded-lg p-4 text-white my-4 flex items-center justify-center text-base font-medium border border-white/10"
               placeholderTextColor="#A5A5A5"
               placeholder="password"
               secureTextEntry

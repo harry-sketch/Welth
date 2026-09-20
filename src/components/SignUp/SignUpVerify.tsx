@@ -88,9 +88,9 @@ const SignUpVerify = ({ email }: Props) => {
             <TextInput
               value={value}
               onChangeText={onChange}
-              className="bg-inputBg rounded-lg px-3 py-4 text-white mb-4"
+              className="bg-inputBg rounded-lg p-4 text-base font-medium flex items-center justify-center  text-white mb-4 border border-white/10"
               placeholderTextColor="#A5A5A5"
-              placeholder="Enter code"
+              placeholder="Enter verification code"
             />
           )}
         />
