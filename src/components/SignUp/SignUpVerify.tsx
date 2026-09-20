@@ -108,6 +108,23 @@ const SignUpVerify = ({ email }: Props) => {
             </Text>
           )}
         </TouchableOpacity>
+
+        <View className="flex flex-row justify-center gap-2">
+          <TouchableOpacity
+            onPress={() => signUp.verifications.sendEmailCode()}
+            className="py-2"
+          >
+            <Text className="text-center text-teal-400 text-sm font-medium border-b border-teal-400">
+              I need a new code
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => signUp.reset()} className="py-2">
+            <Text className="text-center text-white text-sm font-medium">
+              Start over
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );

@@ -7,7 +7,7 @@ export default function Onboarding() {
       className="flex-1 justify-center bg-body items-center w-full p-4"
       edges={["top"]}
     >
-      <Text>On-Boarding</Text>
+      <Text className="text-white">On-Boarding</Text>
     </SafeAreaView>
   );
 }

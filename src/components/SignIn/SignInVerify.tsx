@@ -94,6 +94,23 @@ export const SignInVerify = () => {
             </Text>
           )}
         </TouchableOpacity>
+
+        <View className="flex flex-row justify-center gap-2">
+          <TouchableOpacity
+            onPress={() => signIn.mfa.sendEmailCode()}
+            className="py-2"
+          >
+            <Text className="text-center text-teal-400 text-sm font-medium border-b border-teal-400">
+              I need a new code
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => signIn.reset()} className="py-2">
+            <Text className="text-center text-white text-sm font-medium">
+              Start over
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );

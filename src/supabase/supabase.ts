@@ -10,7 +10,7 @@ if (!supabaseUrl || !supabaseKey) {
 export const createClientWithClerk = (
   getToken: () => Promise<string | null>,
 ) => {
-  return createClient(supabaseKey, supabaseUrl, {
+  return createClient(supabaseUrl, supabaseKey, {
     async accessToken() {
       return await getToken();
     },
