@@ -1,6 +1,6 @@
 import { useAuth } from "@clerk/expo";
 import { useMemo } from "react";
-import { createClientWithClerk } from "../utils/supabase";
+import { createClientWithClerk } from "../supabase/supabase";
 
 export const useSupabase = () => {
   const { getToken } = useAuth();
