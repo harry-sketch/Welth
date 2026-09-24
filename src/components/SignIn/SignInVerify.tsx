@@ -74,7 +74,7 @@ export const SignInVerify = () => {
             <TextInput
               value={value}
               onChangeText={onChange}
-              className="bg-inputBg rounded-lg p-4 text-base font-medium flex items-center justify-center  text-white mb-4 border border-white/10"
+              className="bg-inputBg rounded-2xl p-4 text-base font-medium flex items-center justify-center  text-white mb-4 border border-white/10"
               placeholderTextColor="#A5A5A5"
               placeholder="Enter verification code"
             />
@@ -83,7 +83,7 @@ export const SignInVerify = () => {
 
         <TouchableOpacity
           onPress={handleSubmit(handleVerifyCode)}
-          className="bg-primary px-3 py-4 rounded-lg"
+          className="bg-primary px-3 py-4 rounded-2xl"
           disabled={isLoading}
         >
           {isLoading ? (

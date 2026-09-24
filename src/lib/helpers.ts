@@ -1,3 +1,5 @@
+import { eachDayOfInterval, format, startOfDay, startOfMonth } from "date-fns";
+
 export const formatPrice = (
   value: number,
   currency: string = "INR",
@@ -10,3 +12,14 @@ export const formatPrice = (
     maximumFractionDigits: 0,
   }).format(value);
 };
+
+export function dayKey(date: Date) {
+  return format(date, "yyyy-MM-dd");
+}
+
+export function currentMonthDays() {
+  const today = startOfDay(new Date());
+  return eachDayOfInterval({ start: startOfMonth(today), end: today }).map(
+    (d) => ({ key: dayKey(d), label: format(d, "d MMM") }),
+  );
+}

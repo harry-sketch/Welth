@@ -10,6 +10,7 @@ import type {
 interface Props {
   onDelete?: () => void;
   txn: ITransactions;
+  isPending?: boolean;
 }
 
 const INPUT_METHOD_ICONS: Record<
@@ -21,7 +22,7 @@ const INPUT_METHOD_ICONS: Record<
   VOICE: "mic",
 };
 
-export const TxnRow = ({ txn, onDelete }: Props) => {
+export const TxnRow = ({ txn, onDelete, isPending }: Props) => {
   const { amount, category, type, input_method, description, is_flagged } = txn;
 
   const config = getCategoryConfig(category);
@@ -90,7 +91,7 @@ export const TxnRow = ({ txn, onDelete }: Props) => {
     </View>
   );
 
-  if (!onDelete) {
+  if (!onDelete && !isPending) {
     return <View className="mb-2.5">{row}</View>;
   }
 
@@ -100,8 +101,9 @@ export const TxnRow = ({ txn, onDelete }: Props) => {
         overshootRight={false}
         renderRightActions={() => (
           <TouchableOpacity
+            disabled={isPending}
             onPress={onDelete}
-            className="bg-rose-400 rounded-2xl w-16 items-center justify-center"
+            className="bg-rose-400 rounded-2xl w-16 items-center justify-center ml-2"
           >
             <Feather name="trash-2" size={14} color="#fff" />
           </TouchableOpacity>

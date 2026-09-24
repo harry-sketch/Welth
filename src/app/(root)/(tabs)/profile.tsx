@@ -30,7 +30,7 @@ export default function ProfileScreen() {
       <Text>Profile Screen</Text>
 
       <TouchableOpacity
-        className="bg-primary px-3 py-4 rounded-lg mt-4"
+        className="bg-primary px-3 py-4 rounded-2xl mt-4"
         onPress={handleSignOut}
       >
         <Text className="text-center text-white text-base font-medium">

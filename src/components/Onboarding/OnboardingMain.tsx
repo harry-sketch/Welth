@@ -185,7 +185,7 @@ export const OnboardingMain = () => {
             Starting balance
           </Text>
 
-          <View className="bg-inputBg border border-white/10 rounded-lg flex flex-row items-center justify-start px-2 py-1 gap-2 mb-2 w-full">
+          <View className="bg-inputBg border border-white/10 rounded-2xl flex flex-row items-center justify-start px-2 py-1 gap-2 mb-2 w-full">
             <Text className="text-mutedText mb-1 text-sm font-normal">
               {selectedCurrency.symbol}
             </Text>
@@ -216,7 +216,7 @@ export const OnboardingMain = () => {
 
           <TouchableOpacity
             onPress={handlePicker}
-            className="flex flex-row items-center justify-between w-full mb-2.5 border border-white/10 rounded-lg p-3.5 bg-inputBg"
+            className="flex flex-row items-center justify-between w-full mb-2.5 border border-white/10 rounded-2xl p-3.5 bg-inputBg"
           >
             <Text className="text-mutedText mb-1 text-sm font-normal">
               {selectedCurrency.symbol} {selectedCurrency.code}-{" "}
@@ -228,7 +228,7 @@ export const OnboardingMain = () => {
 
           <TouchableOpacity
             disabled={isSaving}
-            className="bg-primary px-3 py-4 rounded-lg mt-4"
+            className="bg-primary px-3 py-4 rounded-2xl mt-4"
             onPress={handleSubmit(handleGetStarted)}
           >
             <Text className="text-center text-white text-xl font-medium">

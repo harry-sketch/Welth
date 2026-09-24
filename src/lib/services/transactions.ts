@@ -27,6 +27,14 @@ interface IGetTxnProps {
   userId?: string;
 }
 
+export interface IDeleteTxnPorps {
+  client: SupabaseClient;
+  accountId: string;
+  amount: number;
+  txnId: string;
+  type: TTransactionType;
+}
+
 export const getTransactions = async ({
   client,
   userId,
@@ -40,4 +48,46 @@ export const getTransactions = async ({
   if (error) throw error;
 
   return data as ITransactions[];
+};
+
+export const deleteTxn = async ({
+  client,
+  txnId,
+  accountId,
+  type,
+  amount,
+}: IDeleteTxnPorps) => {
+  const { error: deleteError } = await client
+    .from("transactions")
+    .delete()
+    .eq("id", txnId);
+
+  if (deleteError) {
+    return { error: deleteError };
+  }
+
+  const { data: accountData, error: fetchError } = await client
+    .from("accounts")
+    .select("balance")
+    .eq("id", accountId)
+    .single();
+
+  if (fetchError) {
+    return { error: fetchError };
+  }
+
+  const diffAmt = type === "INCOME" ? -amount : amount;
+
+  const { error: updateError } = await client
+    .from("accounts")
+    .update({
+      balance: accountData.balance + diffAmt,
+    })
+    .eq("id", accountId);
+
+  if (updateError) {
+    return { error: updateError };
+  }
+
+  return { error: null };
 };

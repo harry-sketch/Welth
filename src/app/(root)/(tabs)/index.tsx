@@ -339,7 +339,7 @@ export default function HomeScreen() {
             <TouchableOpacity
               onPress={() => router.push("/(root)/(tabs)/transaction")}
             >
-              <Text className="text-zinc-900 font-normal text-sm bg-zinc-200 p-2 rounded-lg">
+              <Text className="text-zinc-900 font-normal text-sm bg-zinc-200 p-2 rounded-2xl">
                 See all
               </Text>
             </TouchableOpacity>

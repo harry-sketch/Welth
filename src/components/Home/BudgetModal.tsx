@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useUpdateBudgetMutation } from "../../hooks/queries/useUpdateBudgetMutation";
+import { useUpdateBudgetMutation } from "../../hooks/mutations/useUpdateBudgetMutation";
 import type { IBudget } from "../../lib/services/budget";
 
 interface Props {
@@ -81,14 +81,14 @@ export const BudgetModal = ({ visible, onClose, budget }: Props) => {
             {isPending ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text className="bg-emerald-700 w-full text-center py-4 rounded-lg text-white text-base font-medium">
+              <Text className="bg-emerald-700 w-full text-center py-4 rounded-2xl text-white text-base font-medium">
                 Save
               </Text>
             )}
           </TouchableOpacity>
 
           <TouchableOpacity className="p-2 items-center" onPress={onClose}>
-            <Text className="bg-red-500 w-full text-center py-4 rounded-lg text-white text-base font-medium">
+            <Text className="bg-red-500 w-full text-center py-4 rounded-2xl text-white text-base font-medium">
               Cancel
             </Text>
           </TouchableOpacity>
