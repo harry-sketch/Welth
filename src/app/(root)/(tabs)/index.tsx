@@ -1,9 +1,26 @@
 import { useUser } from "@clerk/expo";
 import { Feather } from "@expo/vector-icons";
+import { isSameMonth } from "date-fns";
 import { useRouter } from "expo-router";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { useMemo } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import { PieChart } from "react-native-gifted-charts";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  type CategoryKey,
+  getCategoryConfig,
+} from "../../../constants/categories";
+import { useAccountQuery } from "../../../hooks/queries/useAccountQuery";
+import { useTxnsQuery } from "../../../hooks/queries/useTxnsQuery";
+import { formatPrice } from "../../../lib/helpers";
 import { userStore } from "../../../store/userStore";
 
 const QUICK_ACTIONS = [
@@ -23,7 +40,7 @@ const QUICK_ACTIONS = [
     icon: "plus",
     label: "Add Manually",
     action: "manual",
-    color: "#3DDC84",
+    color: "#059669",
   },
 ] as const;
 
@@ -34,9 +51,95 @@ export default function HomeScreen() {
 
   const currency = userStore((state) => state.currency);
 
+  const {
+    data: account = [],
+    isLoading: isAccontLoading,
+    refetch: accountRefetch,
+    isRefetching: isAccountRefetching,
+  } = useAccountQuery();
+
+  const {
+    data: txnsData = [],
+    refetch: txnsRetch,
+    isLoading: isTxnsLoading,
+    isRefetching: isTxnsRefetching,
+  } = useTxnsQuery();
+
+  // Total Balance
+  const totolBalance = useMemo(() => {
+    return account.reduce((acc, sum) => acc + sum.balance, 0);
+  }, [account]);
+
+  //Filter Current Month Txns from Txns
+  const currentMonthTxns = useMemo(() => {
+    const now = new Date();
+    return txnsData.filter(({ date }) => isSameMonth(new Date(date), now));
+  }, [txnsData]);
+
+  //Current Month Income
+  const currentMonthIncome = useMemo(() => {
+    return currentMonthTxns
+      .filter(({ type }) => type === "INCOME")
+      .reduce((sum, acc) => sum + acc.amount, 0);
+  }, [currentMonthTxns]);
+
+  // Current Month Expense
+  const currentMonthExpense = useMemo(() => {
+    const expenseTxns = currentMonthTxns.filter(
+      ({ type }) => type === "EXPENSE",
+    );
+    const t = expenseTxns.reduce((sum, acc) => sum + acc.amount, 0);
+    return t;
+  }, [currentMonthTxns]);
+
+  // Per Month Expense
+  const monthExpenseBreakdown = useMemo(() => {
+    const map: Record<string, number> = {};
+    const gg = currentMonthTxns.filter(({ type }) => type === "EXPENSE");
+
+    gg.forEach(({ amount, category }) => {
+      map[category] = (map[category] ?? 0) + amount;
+    });
+
+    const t = Object.entries(map)
+      .sort((a, b) => b[1] - a[1])
+      .map(([key, val]) => ({
+        amount: val,
+        category: key as CategoryKey,
+        color: getCategoryConfig(key as CategoryKey).color,
+      }));
+
+    return t;
+  }, [currentMonthTxns]);
+
+  // Recent txns
+
+  const recentTxns = useMemo(() => txnsData.slice(0, 5), [txnsData]);
+
+  // Conditions
+  const isRefreshing = isAccountRefetching || isTxnsRefetching;
+  const isLoading = isTxnsLoading || isAccontLoading;
+
+  // Handlers
+  const refresh = () => {
+    accountRefetch();
+    txnsRetch();
+  };
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center bg-body items-center w-full p-4">
+        <ActivityIndicator color="white" />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-zinc-200" edges={["top"]}>
       <ScrollView
+        refreshControl={
+          <RefreshControl onRefresh={refresh} refreshing={isRefreshing} />
+        }
         className="flex-1 bg-body"
         showsVerticalScrollIndicator={false}
       >
@@ -74,19 +177,19 @@ export default function HomeScreen() {
               Total Balance
             </Text>
             <Text className=" text-zinc-950  text-5xl font-bold mt-1">
-              ₹ 20,000
+              {formatPrice(totolBalance, currency)}
             </Text>
             <View className="flex-row gap-2">
               <View className="flex-row items-center gap-1">
                 <Text className="text-emerald-600 text-sm font-medium">
-                  15,944
+                  {formatPrice(currentMonthIncome, currency)}
                 </Text>
                 <Feather name="arrow-up-right" size={14} color="#059669" />
               </View>
 
               <View className="flex-row items-center gap-1">
                 <Text className="text-rose-600 text-sm font-medium">
-                  10,000
+                  {formatPrice(currentMonthExpense, currency)}
                 </Text>
 
                 <Feather name="arrow-down-right" size={14} color="#e11d48" />
@@ -98,6 +201,12 @@ export default function HomeScreen() {
             {QUICK_ACTIONS.map(({ action, color, icon, label }) => (
               <TouchableOpacity
                 key={label}
+                onPress={() => {
+                  router.push({
+                    pathname: "/(root)/(tabs)/add-transaction",
+                    params: { action },
+                  });
+                }}
                 className="rounded-2xl border-zinc-100 py-4 border flex-1 items-center gap-2 bg-zinc-100"
               >
                 <View
@@ -111,24 +220,110 @@ export default function HomeScreen() {
               </TouchableOpacity>
             ))}
           </View>
+        </View>
 
-          {/* <View className="flex-row gap-2 w-full">
-            <TouchableOpacity className="rounded-2xl border-zinc-900 py-4 border flex-1 items-center gap-2">
-              <View className="w-9 h-9 rounded-full items-center justify-center">
-                <Text>AI Receipt Scan</Text>
-              </View>
+        <TouchableOpacity
+          onPress={() => router.push("/assistant")}
+          className="border border-zinc-900 rounded-2xl mt-4 p-4 bg-zinc-200 flex-row items-center justify-between"
+        >
+          <View className="flex-row gap-2">
+            <View className="bg-zinc-100 p-2 flex items-center justify-center rounded-full">
+              <View className="bg-blue-600 rounded-full w-2 h-2" />
+            </View>
+            <Text className="text-zinc-900 font-normal text-base">
+              Ask anything about your money
+            </Text>
+          </View>
+
+          <Feather name="arrow-right" color="#2563eb" size={14} />
+        </TouchableOpacity>
+
+        <View>
+          <TouchableOpacity className="border border-zinc-900 rounded-2xl my-4 p-4 bg-zinc-200 flex-1">
+            <View className="flex-row justify-between">
+              <Text className="text-zinc-800 text-base font-medium mb-0.5">
+                Monthly Budget
+              </Text>
+              <Feather name="edit" size={14} color="#059669" />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View className="border border-zinc-900 rounded-2xl p-4 bg-zinc-200">
+          <Text className="text-zonc-950 font-medium text-base mb-4">
+            Expense Breakdown (This Month)
+          </Text>
+
+          <View className="flex-row items-center justify-between gap-8">
+            <PieChart
+              data={monthExpenseBreakdown.map(({ amount, color }) => ({
+                value: amount,
+                color,
+              }))}
+              radius={60}
+              innerRadius={38}
+              innerCircleColor="fff"
+            />
+
+            <View className="flex-1">
+              {monthExpenseBreakdown
+                .slice(0, 6)
+                .map(({ amount, category, color }) => (
+                  <View key={category} className="flex-row justify-between">
+                    <View className="flex-row items-center flex-1 gap-2 mb-2 last:mb-0">
+                      <View
+                        style={{ backgroundColor: color }}
+                        className="rounded-full h-2 w-2"
+                      />
+                      <Text className="text-sm font-medium text-zinc-700">
+                        {category}
+                      </Text>
+                    </View>
+                    <Text className="text-sm font-semibold text-zinc-900">
+                      {formatPrice(amount, currency)}
+                    </Text>
+                  </View>
+                ))}
+            </View>
+          </View>
+        </View>
+
+        <View className="mt-4">
+          <View className="flex-row justify-between">
+            <Text className="text-zinc-200 font-medium text-base">
+              Recent Transaction
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push("/(root)/(tabs)/transaction")}
+            >
+              <Text className="text-zinc-400 font-normal text-sm">
+                Sell all
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity className="rounded-2xl border-zinc-900 py-4 border flex-1 items-center gap-2">
-              <View className="w-9 h-9 rounded-full items-center justify-center">
-                <Text>AI Receipt Scan</Text>
+          </View>
+
+          <View className="mt-4">
+            {recentTxns.map(({ id, type, amount, category }) => (
+              <View
+                key={id}
+                className="border border-zinc-100 rounded-xl p-4 mb-4 flex-row justify-between items-center"
+              >
+                <Text
+                  className={`${type === "EXPENSE" ? "text-rose-400" : " text-emerald-400"} text-base font-medium`}
+                >
+                  {type === "EXPENSE" ? "Expense" : "Income"}
+                </Text>
+                <View className="">
+                  <Text className="text-zinc-100 text-base font-medium text-right">
+                    {amount}
+                  </Text>
+                  <Text className="text-zinc-200 font-sm font-normal">
+                    {category}
+                  </Text>
+                </View>
               </View>
-            </TouchableOpacity>
-            <TouchableOpacity className="rounded-2xl border-zinc-900 py-4 border flex-1 items-center gap-2">
-              <View className="w-9 h-9 rounded-full items-center justify-center">
-                <Text>AI Receipt Scan</Text>
-              </View>
-            </TouchableOpacity>
-          </View> */}
+            ))}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
