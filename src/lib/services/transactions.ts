@@ -11,7 +11,7 @@ export interface ITransactions {
   type: TTransactionType;
   amount: number;
   category: CategoryKey;
-  desciption: string | null;
+  description: string | null;
   date: string;
   status: string;
   input_method: TInputMethodType;

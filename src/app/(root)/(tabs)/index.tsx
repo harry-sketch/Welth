@@ -2,7 +2,7 @@ import { useUser } from "@clerk/expo";
 import { Feather } from "@expo/vector-icons";
 import { isSameMonth } from "date-fns";
 import { useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -14,11 +14,14 @@ import {
 import { ScrollView } from "react-native-gesture-handler";
 import { PieChart } from "react-native-gifted-charts";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { BudgetModal } from "../../../components/Home/BudgetModal";
+import { TxnRow } from "../../../components/Home/TxnRow";
 import {
   type CategoryKey,
   getCategoryConfig,
 } from "../../../constants/categories";
 import { useAccountQuery } from "../../../hooks/queries/useAccountQuery";
+import { useGetBudgetQuery } from "../../../hooks/queries/useBudgetQuery";
 import { useTxnsQuery } from "../../../hooks/queries/useTxnsQuery";
 import { formatPrice } from "../../../lib/helpers";
 import { userStore } from "../../../store/userStore";
@@ -51,6 +54,9 @@ export default function HomeScreen() {
 
   const currency = userStore((state) => state.currency);
 
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState<boolean>(false);
+
+  // Acconts Data
   const {
     data: account = [],
     isLoading: isAccontLoading,
@@ -58,12 +64,16 @@ export default function HomeScreen() {
     isRefetching: isAccountRefetching,
   } = useAccountQuery();
 
+  // Transactions Data
   const {
     data: txnsData = [],
     refetch: txnsRetch,
     isLoading: isTxnsLoading,
     isRefetching: isTxnsRefetching,
   } = useTxnsQuery();
+
+  // Budget data
+  const { data: budget, refetch: budgetReftch } = useGetBudgetQuery();
 
   // Total Balance
   const totolBalance = useMemo(() => {
@@ -124,6 +134,7 @@ export default function HomeScreen() {
   const refresh = () => {
     accountRefetch();
     txnsRetch();
+    budgetReftch();
   };
 
   if (isLoading) {
@@ -147,7 +158,7 @@ export default function HomeScreen() {
           <View className="flex-row justify-between">
             <Image
               source={require("../../../../assets/images/welth.png")}
-              className="h-16 w-32"
+              style={{ width: 80, height: "100%" }}
               resizeMode="contain"
             />
 
@@ -239,13 +250,45 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <View>
-          <TouchableOpacity className="border border-zinc-900 rounded-2xl my-4 p-4 bg-zinc-200 flex-1">
+          <TouchableOpacity
+            onPress={() => setIsBudgetModalOpen(true)}
+            className="border border-zinc-900 rounded-2xl my-4 p-4 bg-zinc-200 flex-1"
+          >
             <View className="flex-row justify-between">
               <Text className="text-zinc-800 text-base font-medium mb-0.5">
                 Monthly Budget
               </Text>
               <Feather name="edit" size={14} color="#059669" />
             </View>
+            {budget ? (
+              <>
+                <Text className="text-sm font-normal text-zinc-400">
+                  {formatPrice(currentMonthExpense, currency)} of{" "}
+                  {formatPrice(Number(budget.amount), currency)} spent
+                </Text>
+                <View className="h-2 rounded-full bg-[#F0EEE7] overflow-hidden mt-2">
+                  <View
+                    className="h-2 rounded-full"
+                    style={{
+                      width: `${Math.min(
+                        Math.round((currentMonthExpense / budget.amount) * 100),
+                        100,
+                      )}%`,
+                      backgroundColor:
+                        currentMonthExpense >= budget.amount
+                          ? "#FF6B4A"
+                          : currentMonthExpense >= budget.amount * 0.8
+                            ? "#F7DC6F"
+                            : "#3DDC84",
+                    }}
+                  />
+                </View>
+              </>
+            ) : (
+              <Text className="text-sm font-normal text-zinc-400">
+                Tap to set a monthly spending budget
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -296,36 +339,27 @@ export default function HomeScreen() {
             <TouchableOpacity
               onPress={() => router.push("/(root)/(tabs)/transaction")}
             >
-              <Text className="text-zinc-400 font-normal text-sm">
-                Sell all
+              <Text className="text-zinc-900 font-normal text-sm bg-zinc-200 p-2 rounded-lg">
+                See all
               </Text>
             </TouchableOpacity>
           </View>
 
           <View className="mt-4">
-            {recentTxns.map(({ id, type, amount, category }) => (
-              <View
-                key={id}
-                className="border border-zinc-100 rounded-xl p-4 mb-4 flex-row justify-between items-center"
-              >
-                <Text
-                  className={`${type === "EXPENSE" ? "text-rose-400" : " text-emerald-400"} text-base font-medium`}
-                >
-                  {type === "EXPENSE" ? "Expense" : "Income"}
-                </Text>
-                <View className="">
-                  <Text className="text-zinc-100 text-base font-medium text-right">
-                    {amount}
-                  </Text>
-                  <Text className="text-zinc-200 font-sm font-normal">
-                    {category}
-                  </Text>
-                </View>
-              </View>
+            {recentTxns.map((txn) => (
+              <TxnRow key={txn.id} txn={txn} />
             ))}
           </View>
         </View>
       </ScrollView>
+
+      {user && (
+        <BudgetModal
+          budget={budget}
+          visible={isBudgetModalOpen}
+          onClose={() => setIsBudgetModalOpen(false)}
+        />
+      )}
     </SafeAreaView>
   );
 }

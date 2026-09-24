@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export interface IBudget {
   id: string;
   user_id: string;
-  amount: string;
+  amount: number;
   last_alert_send: string | null;
   last_alert_threshold: string;
   created_at: string;
