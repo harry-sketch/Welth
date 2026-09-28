@@ -36,7 +36,8 @@
       ],
       "@clerk/expo",
       "expo-secure-store",
-      "expo-sharing"
+      "expo-sharing",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true,

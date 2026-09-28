@@ -133,17 +133,17 @@ export const CATEGORIES = {
 // ── DERIVED HELPERS ───────────────────────────────────────────
 export type CategoryKey = keyof typeof CATEGORIES;
 
-// export const EXPENSE_CATEGORIES = Object.entries(CATEGORIES)
-//   .filter(([, v]) => v.type === "EXPENSE")
-//   .map(([k, v]) => ({ key: k as CategoryKey, ...v }));
+export const EXPENSE_CATEGORIES = Object.entries(CATEGORIES)
+  .filter(([, v]) => v.type === "EXPENSE")
+  .map(([k, v]) => ({ key: k as CategoryKey, ...v }));
 
-// export const INCOME_CATEGORIES = Object.entries(CATEGORIES)
-//   .filter(([, v]) => v.type === "INCOME")
-//   .map(([k, v]) => ({ key: k as CategoryKey, ...v }));
+export const INCOME_CATEGORIES = Object.entries(CATEGORIES)
+  .filter(([, v]) => v.type === "INCOME")
+  .map(([k, v]) => ({ key: k as CategoryKey, ...v }));
 
 // // single lookup by key - use this everywhere instead of CATEGORIES[key]
 export const getCategoryConfig = (key: CategoryKey) => CATEGORIES[key];
 
 // // used in Gemini prompts - gives the model the full list of valid keys
-// export const CATEGORY_KEYS_EXPENSE = EXPENSE_CATEGORIES.map((c) => c.key);
-// export const CATEGORY_KEYS_INCOME = INCOME_CATEGORIES.map((c) => c.key);
+export const CATEGORY_KEYS_EXPENSE = EXPENSE_CATEGORIES.map((c) => c.key);
+export const CATEGORY_KEYS_INCOME = INCOME_CATEGORIES.map((c) => c.key);

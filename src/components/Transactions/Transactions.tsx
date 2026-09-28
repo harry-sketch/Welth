@@ -123,11 +123,11 @@ export default function TransactionPage() {
         </View>
       </View>
 
-      <View className="my-4 px-2">
+      <View className="my-4">
         <TextInput
           value={query}
           onChangeText={(val) => setQuery(val)}
-          className="bg-inputBg rounded-2xl p-4 text-base font-medium flex items-center justify-center  text-white border border-white/10"
+          className="bg-inputBg rounded-2xl p-4 text-sm font-medium flex items-center justify-center  text-white border border-white/10"
           placeholderTextColor="#A5A5A5"
           placeholder="Search..."
         />

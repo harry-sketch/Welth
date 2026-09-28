@@ -22,6 +22,18 @@ export interface ITransactions {
   updated_at: string;
 }
 
+export interface ICreateTxns {
+  user_id: string;
+  account_id: string;
+  amount: number;
+  date: string;
+  category: CategoryKey;
+  type: TTransactionType;
+  input_method: TInputMethodType;
+  description: string | null;
+  voice_transcript: string | null;
+}
+
 interface IGetTxnProps {
   client: SupabaseClient;
   userId?: string;
@@ -90,4 +102,49 @@ export const deleteTxn = async ({
   }
 
   return { error: null };
+};
+
+export const createTransaction = async (
+  client: SupabaseClient,
+  payload: ICreateTxns,
+) => {
+  try {
+    const { data: transaction, error } = await client
+      .from("transactions")
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) {
+      return { transaction: null, error };
+    }
+
+    const { data: accountData, error: fetchError } = await client
+      .from("accounts")
+      .select("balance")
+      .eq("id", payload.account_id)
+      .single();
+
+    if (fetchError) {
+      return { transaction, error: fetchError };
+    }
+
+    const diffAmt =
+      payload.type === "INCOME" ? payload.amount : -payload.amount;
+
+    const { error: updateError } = await client
+      .from("accounts")
+      .update({
+        balance: accountData.balance + diffAmt,
+      })
+      .eq("id", payload.account_id);
+
+    if (updateError) {
+      return { transaction, error: updateError };
+    }
+
+    return { transaction, error: null };
+  } catch (error) {
+    console.log({ error });
+  }
 };

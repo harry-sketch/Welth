@@ -123,7 +123,6 @@ export default function HomeScreen() {
   }, [currentMonthTxns]);
 
   // Recent txns
-
   const recentTxns = useMemo(() => txnsData.slice(0, 5), [txnsData]);
 
   // Conditions
@@ -158,19 +157,14 @@ export default function HomeScreen() {
           <View className="flex-row justify-between">
             <Image
               source={require("../../../../assets/images/welth.png")}
-              style={{ width: 80, height: "100%" }}
+              style={{ width: 100, height: "100%" }}
               resizeMode="contain"
             />
 
-            <View className="flex-row gap-2">
-              <View>
-                <Text className="text-sm font-medium text-zinc-600">
-                  Good Afternoon
-                </Text>
-                <Text className="text-base font-semibold text-zinc-950">
-                  {user?.fullName}
-                </Text>
-              </View>
+            <View className="flex-row gap-2 items-center">
+              <Text className="text-base font-semibold text-zinc-950">
+                {user?.fullName}
+              </Text>
               <TouchableOpacity
                 onPress={() => router.push("/(root)/(tabs)/profile")}
               >

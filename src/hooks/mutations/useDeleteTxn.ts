@@ -21,7 +21,7 @@ export const useDeleteTxn = () => {
       }),
     onError: (error) => console.log({ error }),
     onSuccess: (result) => {
-      if (result?.erorr) return;
+      if (result?.error) return;
 
       queryClient.invalidateQueries({
         queryKey: ["transaction"],

@@ -81,7 +81,7 @@ export const BudgetModal = ({ visible, onClose, budget }: Props) => {
             {isPending ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text className="bg-emerald-700 w-full text-center py-4 rounded-2xl text-white text-base font-medium">
+              <Text className="bg-primary w-full text-center py-4 rounded-2xl text-white text-base font-medium">
                 Save
               </Text>
             )}
