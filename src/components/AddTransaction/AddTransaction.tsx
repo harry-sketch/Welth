@@ -2,7 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, isValid } from "date-fns";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
@@ -36,6 +36,7 @@ import {
 import { AiActionCard } from "./AiActionCard";
 import { CalendarPicker } from "./CalendarPicker";
 import { ReceiptModal } from "./ReceiptModal";
+import { VoiceModal } from "./VoiceModal";
 
 const TYPE_OPTIONS = [
   { key: "EXPENSE" as const, label: "Expense" },
@@ -51,11 +52,15 @@ const DEFAULT_VALUES = (accounts: IAccount[]): TCreateTransactionType => ({
   date: new Date(),
 });
 
-export const AddTransactionPage = () => {
+interface Props {
+  params?: string;
+}
+
+export const AddTransactionPage = ({ params }: Props) => {
   const router = useRouter();
   const [scanning, setScanning] = useState<boolean>(false);
   const [isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
-  const [_isVoiceModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState<boolean>(false);
   const [isDatePickerOpen, setIsPickerOpen] = useState<boolean>(false);
   const [voiceTranscript, setVoiceTranscript] = useState<string | null>("");
   const [inputMethod, setInputMethod] = useState<TInputMethodType>("MANUAL");
@@ -140,6 +145,16 @@ export const AddTransactionPage = () => {
     }
   };
 
+  const handleVoice = async (result: ExtractedTransaction) => {
+    try {
+      applyExtraction(result);
+      setVoiceTranscript(result.transcript);
+      setInputMethod("VOICE");
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
   const handleSaveTxn = async (values: TCreateTransactionType) => {
     try {
       const parsed = parseFloat(values.amount.replace(/,/g, ""));
@@ -168,6 +183,21 @@ export const AddTransactionPage = () => {
       console.log({ error });
     }
   };
+
+  useEffect(() => {
+    if (accountData.length > 0) resetForm(DEFAULT_VALUES(accountData));
+  }, [accountData, resetForm]);
+
+  useEffect(() => {
+    if (params === "scan") {
+      setIsScannerOpen(true);
+      router.setParams({ action: null });
+    } else if (params === "voice") {
+      setIsVoiceModalOpen(true);
+      router.setParams({ action: null });
+    }
+  }, [params, router.setParams]);
+
   return (
     <SafeAreaView className="bg-body flex-1 px-2" edges={["top"]}>
       <Text className="text-zinc-100 font-bold text-2xl">Add transaction</Text>
@@ -208,7 +238,7 @@ export const AddTransactionPage = () => {
                 icon="mic"
                 title="Voice log"
                 desc="Just say it"
-                onPress={() => setIsModalOpen(true)}
+                onPress={() => setIsVoiceModalOpen(true)}
               />
             </View>
 
@@ -369,6 +399,12 @@ export const AddTransactionPage = () => {
         onCapture={(base64, mimiType) => handleCapture(base64, mimiType)}
         visible={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
+      />
+
+      <VoiceModal
+        visible={isVoiceModalOpen}
+        onExtracted={handleVoice}
+        onClose={() => setIsVoiceModalOpen(false)}
       />
     </SafeAreaView>
   );

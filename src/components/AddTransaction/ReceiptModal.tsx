@@ -78,11 +78,8 @@ export const ReceiptModal = ({ visible, onClose, onCapture }: props) => {
           <View className="border-2 border-dashed w-full aspect-[3/4] border-white/90 rounded-2xl" />
         </View>
 
-        <SafeAreaView
-          className="absolute inset-0 border"
-          edges={["top", "bottom"]}
-        >
-          <View className="px-3 flex-row items-center justify-between">
+        <SafeAreaView className="absolute inset-0" edges={["top", "bottom"]}>
+          <View className="px-3 flex-row items-center justify-between pt-20">
             <TouchableOpacity
               onPress={onClose}
               className="bg-black w-10 h-10 flex-row items-center justify-center  rounded-full"
