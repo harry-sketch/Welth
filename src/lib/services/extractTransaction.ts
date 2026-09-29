@@ -34,25 +34,23 @@ const RESPONSE_SCHEMA = {
   required: ["type", "amount", "category", "description", "date", "transcript"],
 };
 
-export const callGemini = async (
+async function callGemini(
   promptText: string,
-  inlineData: { data: string; mimiType: string },
-) => {
-  const api_key = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+  inlineData: { mimeType: string; data: string },
+) {
+  const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
-  if (!api_key)
-    throw new Error(`Google Gemini api-key: ${api_key} not found!!!`);
+  if (!apiKey) throw new Error("Missing EXPO_PUBLIC_GEMINI_API_KEY");
 
-  const url = `${GEMINI_URL}?${api_key}`;
-
-  const resp = await fetch(url, {
+  const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [
-        { role: "user", parts: [{ text: promptText }, { inlineData }] },
+        {
+          role: "user",
+          parts: [{ text: promptText }, { inlineData }],
+        },
       ],
       generationConfig: {
         responseMimeType: "application/json",
@@ -61,24 +59,22 @@ export const callGemini = async (
     }),
   });
 
-  if (!resp.ok) {
-    const errText = await resp.text();
+  if (!res.ok) {
+    const errText = await res.text();
     throw new Error(`Gemini request failed: ${errText}`);
   }
 
-  const data = await resp.json();
-
+  const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
   if (!text) throw new Error("No response from Gemini");
 
   return JSON.parse(text) as ExtractedTransaction;
-};
+}
 
-export const extractTxnsFromReceipt = async (
+export async function extractTxnsFromReceipt(
   base64Image: string,
-  mimiType: string,
-): Promise<ExtractedTransaction> => {
+  mimeType: string,
+): Promise<ExtractedTransaction> {
   const prompt = `You are reading a receipt photo for a personal finance app. Extract the transaction details.
 
 - "type" is always "EXPENSE" for a receipt.
@@ -89,18 +85,14 @@ export const extractTxnsFromReceipt = async (
 - "transcript" should be null.
 - If any field can't be confidently determined from the image, set it to null. Do not guess.`;
 
-  return await callGemini(prompt, {
-    data: base64Image,
-    mimiType,
-  });
-};
+  return callGemini(prompt, { mimeType, data: base64Image });
+}
 
-export const extractTxnsFromVoice = async (
+export async function extractTxnsFromVoice(
   base64Audio: string,
-  mimiType: string,
-): Promise<ExtractedTransaction> => {
+  mimeType: string,
+): Promise<ExtractedTransaction> {
   const today = new Date().toISOString().slice(0, 10);
-
   const prompt = `You are transcribing a short voice note for a personal finance app where the user is logging a transaction (e.g. "I spent 400 on groceries yesterday" or "Got 5000 rupees freelance payment today"). Today's date is ${today}. Extract the transaction details.
 
 - "type" is "EXPENSE" or "INCOME" based on what the user said.
@@ -111,8 +103,5 @@ export const extractTxnsFromVoice = async (
 - "transcript" is the verbatim transcription of what was said.
 - If any field can't be confidently determined, set it to null. Do not guess.`;
 
-  return callGemini(prompt, {
-    data: base64Audio,
-    mimiType,
-  });
-};
+  return callGemini(prompt, { mimeType, data: base64Audio });
+}
