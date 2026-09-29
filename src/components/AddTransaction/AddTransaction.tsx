@@ -1,11 +1,12 @@
 import { Feather } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -16,12 +17,17 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
+  type CategoryKey,
   EXPENSE_CATEGORIES,
   INCOME_CATEGORIES,
 } from "../../constants/categories";
 import { useCreateTxn } from "../../hooks/mutations/useCreateTxn";
 import { useAccountQuery } from "../../hooks/queries/useAccountQuery";
 import type { IAccount } from "../../lib/services/account";
+import {
+  type ExtractedTransaction,
+  extractTxnsFromReceipt,
+} from "../../lib/services/extractTransaction";
 import type { TInputMethodType } from "../../lib/services/transactions";
 import {
   createTransactionSchema,
@@ -29,10 +35,7 @@ import {
 } from "../../lib/transaction";
 import { AiActionCard } from "./AiActionCard";
 import { CalendarPicker } from "./CalendarPicker";
-
-interface Props {
-  params?: string;
-}
+import { ReceiptModal } from "./ReceiptModal";
 
 const TYPE_OPTIONS = [
   { key: "EXPENSE" as const, label: "Expense" },
@@ -48,10 +51,10 @@ const DEFAULT_VALUES = (accounts: IAccount[]): TCreateTransactionType => ({
   date: new Date(),
 });
 
-export const AddTransactionPage = ({ params }: Props) => {
+export const AddTransactionPage = () => {
   const router = useRouter();
-
-  const [_isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
+  const [scanning, setScanning] = useState<boolean>(false);
+  const [isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
   const [_isVoiceModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isDatePickerOpen, setIsPickerOpen] = useState<boolean>(false);
   const [voiceTranscript, setVoiceTranscript] = useState<string | null>("");
@@ -81,10 +84,64 @@ export const AddTransactionPage = ({ params }: Props) => {
 
   const { mutateAsync, isPending } = useCreateTxn();
 
+  const applyExtraction = (result: ExtractedTransaction) => {
+    try {
+      const categoryType =
+        result.type === "INCOME" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
+      const isValidCategory = (key: CategoryKey | null): key is CategoryKey =>
+        !!key && categoryType.some((c) => c.key === key);
+
+      if (result.type) setValue("type", result.type);
+
+      if (result.amount !== null) setValue("amount", String(result.amount));
+
+      if (isValidCategory(result.category))
+        setValue("category", result.category);
+
+      if (result.description) setValue("description", result.description);
+
+      if (result.date) {
+        const parsedDate = new Date(result.date);
+
+        if (isValid(parsedDate) && parsedDate <= new Date())
+          setValue("date", parsedDate);
+      }
+
+      const missing = [
+        result.amount === null && "amount",
+        isValidCategory(result.category) && "category",
+      ].filter(Boolean);
+
+      if (missing.length > 0) {
+        Alert.alert(
+          "Review before saving",
+          `Couldn't confidently read the ${missing.join(" and ")}. Please fill it in.`,
+        );
+      }
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
+  const handleCapture = async (base64: string, mimiType: string) => {
+    setScanning(true);
+    setIsScannerOpen(false);
+    try {
+      const extractedData = await extractTxnsFromReceipt(base64, mimiType);
+
+      applyExtraction(extractedData);
+
+      setInputMethod("RECEIPT_SCAN");
+      setScanning(false);
+    } catch (error) {
+      console.log({ error });
+      setScanning(false);
+    }
+  };
+
   const handleSaveTxn = async (values: TCreateTransactionType) => {
     try {
-      console.log(values);
-
       const parsed = parseFloat(values.amount.replace(/,/g, ""));
 
       await mutateAsync({
@@ -301,6 +358,18 @@ export const AddTransactionPage = ({ params }: Props) => {
           </ScrollView>
         )}
       </KeyboardAvoidingView>
+
+      {scanning && (
+        <View className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <ActivityIndicator color="#fff" size={18} />
+        </View>
+      )}
+
+      <ReceiptModal
+        onCapture={(base64, mimiType) => handleCapture(base64, mimiType)}
+        visible={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+      />
     </SafeAreaView>
   );
 };

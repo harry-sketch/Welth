@@ -36,7 +36,7 @@ const RESPONSE_SCHEMA = {
 
 export const callGemini = async (
   promptText: string,
-  inlineData: { data: string },
+  inlineData: { data: string; mimiType: string },
 ) => {
   const api_key = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
@@ -77,6 +77,7 @@ export const callGemini = async (
 
 export const extractTxnsFromReceipt = async (
   base64Image: string,
+  mimiType: string,
 ): Promise<ExtractedTransaction> => {
   const prompt = `You are reading a receipt photo for a personal finance app. Extract the transaction details.
 
@@ -90,11 +91,13 @@ export const extractTxnsFromReceipt = async (
 
   return await callGemini(prompt, {
     data: base64Image,
+    mimiType,
   });
 };
 
 export const extractTxnsFromVoice = async (
   base64Audio: string,
+  mimiType: string,
 ): Promise<ExtractedTransaction> => {
   const today = new Date().toISOString().slice(0, 10);
 
@@ -110,5 +113,6 @@ export const extractTxnsFromVoice = async (
 
   return callGemini(prompt, {
     data: base64Audio,
+    mimiType,
   });
 };
