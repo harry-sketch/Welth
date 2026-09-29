@@ -32,3 +32,32 @@ export const getAccounts = async ({
 
   return data as IAccount[];
 };
+
+export const createAccount = async (
+  client: SupabaseClient,
+  userId: string,
+  name: string,
+  type: TAccountType,
+) => {
+  try {
+    const { data, error } = await client
+      .from("accounts")
+      .insert({
+        user_id: userId,
+        name,
+        type,
+        balance: 0,
+        is_default: false,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return error;
+    }
+
+    return data as IAccount;
+  } catch (error) {
+    console.log({ error });
+  }
+};
