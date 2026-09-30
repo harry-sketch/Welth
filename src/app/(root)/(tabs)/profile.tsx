@@ -1,7 +1,7 @@
 import { useAuth, useUser } from "@clerk/expo";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -13,6 +13,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import CurrencyPicker, {
+  ALL_CURRIENCIES,
+  type TCurrencyCodeType,
+} from "../../../components/Onboarding/CurrencyPicker";
 import { useAccountQuery } from "../../../hooks/queries/useAccountQuery";
 import { formatPrice } from "../../../lib/helpers";
 import { userStore } from "../../../store/userStore";
@@ -23,6 +27,18 @@ export default function ProfileScreen() {
   const { user } = useUser();
 
   const { signOut } = useAuth();
+
+  const [isCurrencyPickerOpen, setIsCurrencyPickerOpen] =
+    useState<boolean>(false);
+
+  const inr = useMemo(() => {
+    return (
+      ALL_CURRIENCIES.find(({ code }) => code === "INR") ?? ALL_CURRIENCIES[0]
+    );
+  }, []);
+
+  const [selectedCurrency, setSelectedCurrency] =
+    useState<TCurrencyCodeType>(inr);
 
   const currency = userStore((state) => state.currency);
 
@@ -119,7 +135,21 @@ export default function ProfileScreen() {
             Prefrences
           </Text>
 
-          <View className="rounded-2xl border-white/10 p-4 border flex-1 items-start bg-inputBg backdrop-blur-lg"></View>
+          <TouchableOpacity
+            onPress={() => setIsCurrencyPickerOpen(true)}
+            className="rounded-2xl border-white/10 p-4 border flex-1 items-start bg-inputBg backdrop-blur-lg justify-between flex-row"
+          >
+            <View className="flex-row items-center gap-2">
+              <Feather name="dollar-sign" size={14} color="#fff" />
+              <Text className="text-zinc-200 text-sm font-normal">
+                Currency
+              </Text>
+            </View>
+
+            <Text className="text-zinc-100 text-sm font-semibold">
+              {selectedCurrency.code}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity
@@ -132,6 +162,13 @@ export default function ProfileScreen() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <CurrencyPicker
+        selectedCode={selectedCurrency.code}
+        handleSelectCurrency={(curr) => setSelectedCurrency(curr)}
+        isVisible={isCurrencyPickerOpen}
+        onClose={() => setIsCurrencyPickerOpen(false)}
+      />
     </SafeAreaView>
   );
 }
